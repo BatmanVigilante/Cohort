@@ -6,7 +6,7 @@ const {UserModel,TodoModel} =require("./db.js");
 const { auth, JWT_SECRET } = require("./auth");
 
 
-await mongoose.connect("mongodb+srv://ashishmohan625:X5uDL_BFA4yX3!q@cluster0.qqdbp01.mongodb.net/todo-app");
+await mongoose.connect("mongodb+srv://ashishmohan625:X5DL_BFA4yX3!q@cluster0.qqdbp01.mongodb.net/todo-app");
 
 app.use(express.json());
 
