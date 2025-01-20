@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+mongoose.connect("mongodb+srv://ashishmohan625:X5uDL_BFA4yX3!q@cluster0.qqdbp01.mongodb.net/course")
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
@@ -36,3 +38,14 @@ const purchases = new Schema({
     user_id:{type:String},
 })
 
+const userModel = mongoose.Model("users",user);
+const adminModel = mongoose.Model("admins",admin);
+const courseModel = mongoose.Model("courses",course);
+const purchaseModel = mongoose.Model("purchases",purchases);
+
+module.exports({
+    userModel,
+    adminModel,
+    courseModel,
+    purchaseModel
+})
