@@ -1,79 +1,159 @@
-const express = require("express");
-const app = express();
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = "VISCA BARCA";
+/*
+Assignment #1 - Conditionally render the `logout` or the `signin`/ `signup` pages 
+based on if the user is already logged in or not
+*/
 
+// Import the express library
+const express = require("express");
+
+// Import the jsonwebtoken library
+const jwt = require("jsonwebtoken");
+
+// Create an instance of express application
+const app = express();
+
+// Use the express.json() middleware to parse the request body
 app.use(express.json());
 
-const users = []; // To store user data
+// Create an array to store users' usernames and passwords
+const users = [];
 
-// Signup route
-app.post("/signup", (req, res) => {
+// Create a secret key for the JWT token
+const JWT_SECRET = "ilove100xdevsliveclasses";
+
+// Middleware function to log the request method
+function logger(req, res, next) {
+    // Log the request method to the console
+    console.log(`${req.method} request received`);
+
+    // Call the next middleware function
+    next();
+}
+
+/*
+// Serve the static files from the public directory using the express.static() middleware
+app.use(express.static("public"));
+*/
+
+// Serve the index.html file when accessing the root route
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/public/index.html");
+});
+
+// Signup route to register a new user
+app.post("/signup", logger, (req, res) => {
+    // Get the username and password from the request body
     const { username, password } = req.body;
 
-    // Check if username already exists
-    if (users.find((u) => u.username === username)) {
-        return res.status(400).json({ message: "Username already exists" });
+    if (!username || !password) {
+        return res.json({
+            message: "Username and password are required.",
+        });
     }
 
-    // Add user to the list
-    users.push({
-        username: username,
-        password: password,
-    });
+    // Check if the username has at least 5 characters
+    if (username.length < 5) {
+        return res.json({
+            message: "Username must have at least 5 characters.",
+        });
+    }
 
+    // Check if the user already exists in the users array
+    if (users.find((user) => user.username === username)) {
+        return res.json({
+            message: "You are already signed up!",
+        });
+    }
+
+    // Add the new user to the users array
+    users.push({ username, password });
+
+    // Send a success message to the client
     res.json({
-        message: "User created successfully",
+        message: "You have signed up successfully!",
     });
-
-    console.log(users);
 });
 
-// Signin route
-app.post("/signin", (req, res) => {
+// Signin route to authenticate a user
+app.post("/signin", logger, (req, res) => {
+    // Get the username and password from the request body
     const { username, password } = req.body;
 
-    // Check if username and password match
-    const user = users.find((u) => u.username === username && u.password === password);
+    if (!username || !password) {
+        return res.json({
+            message: "Username and password are required.",
+        });
+    }
 
-    if (user) {
-        // Generate a token and assign it to the user
-        const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: "1h" });
-        return res.json({ token });
+    // Check if the user exists with the provided credentials
+    const foundUser = users.find((user) => user.username === username && user.password === password);
+
+    // Generate a token if the user is found
+    if (foundUser) {
+        // Generate a token using the secret key
+        const token = jwt.sign({ username }, JWT_SECRET);
+
+        // Send the token to the client if the user is found and authenticated
+        res.json({
+            token,
+            message: "You are signed in successfully!",
+        });
     } else {
-        return res.status(401).json({ message: "Invalid username or password" });
+        // Send an error message if the user is not found
+        res.json({
+            message: "Invalid username or password!",
+        });
     }
 });
 
-// Protected route to get user details
-app.get("/me", (req, res) => {
-    const token = req.headers.authorization; // Use lowercase header key
+// Middleware function to authenticate the user based on the token
+function auth(req, res, next) {
+    // Get the token from the request headers
+    const token = req.headers.authorization;
 
+    // Check if the token is provided
     if (!token) {
-        return res.status(401).json({ message: "Authorization header missing" });
+        return res.json({
+            message: "Token is missing!",
+        });
     }
 
+    // Handle the error if the token is invalid
     try {
-        // Decode and verify the token
-        const decoded = jwt.verify(token, JWT_SECRET);
+        // Verify the token using the secret key
+        const decodedData = jwt.verify(token, JWT_SECRET);
 
-        // Find the user using the decoded username
-        const user = users.find((u) => u.username === decoded.username);
+        // Attach the username to the request object
+        req.username = decodedData.username;
+        next();
+    } catch (error) {
+        // Send an error message if the token is invalid
+        res.json({
+            message: "Invalid token!",
+        });
+    }
+}
 
-        if (user) {
-            return res.json({
-                username: user.username,
-            });
-        } else {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-    } catch (err) {
-        // Handle invalid or expired tokens
-        return res.status(401).json({ message: "Invalid token" });
+// Route to get the authenticated user's information
+app.get("/me", logger, auth, (req, res) => {
+    // Get the current user from the request object
+    const currentUser = req.username;
+
+    // Find the authenticated user in the users array
+    const foundUser = users.find((user) => user.username === currentUser);
+
+    // Send the user's information to the client if found or a message if not found
+    if (foundUser) {
+        res.json({
+            username: foundUser.username,
+            password: foundUser.password,
+        });
+    } else {
+        res.json({
+            message: "User not found!",
+        });
     }
 });
 
-// Start the server
-app.listen(3002, () => {
-    console.log("Server running on http://localhost:3001");
-});
+// Start the server on port 3000
+app.listen(3001);
