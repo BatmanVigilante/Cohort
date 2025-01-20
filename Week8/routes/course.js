@@ -1,18 +1,15 @@
-const express = require("express");
+// ./routes/course.js
+const express = require('express');
 const router = express.Router();
 
-router.post('/purchase',(req,res)=>{
-    res.json({
-        message:"Purchase Successful"
-    })
+// Define your routes
+router.get('/', (req, res) => {
+    res.send('Welcome to the Course API!');
 });
 
-router.get('/preview',(req,res)=>{
-    res.json({
-        message:"Preview Successful"
-        })
+router.get('/details', (req, res) => {
+    res.send('Course details');
 });
 
-module.exports = {
-    router
-}
+// Export the router
+module.exports = router;
