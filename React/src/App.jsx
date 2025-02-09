@@ -13,7 +13,7 @@ export default function App() {
 
 function Button(props) {
   function handleClick() {
-    props.setCount(props.count + 1);
+    props.setCount(props.count * 2);
   }
   return <button onClick={handleClick}>Counter {props.count}</button>;
 }
