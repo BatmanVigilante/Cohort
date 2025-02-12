@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect,useState } from 'react'
 import './App.css'
 
 function App() {
@@ -13,12 +13,16 @@ function App() {
 
 function Button(props){
   
-  
-   setInterval(() => {
-      props.setCount(props.count + 1)
-    }
-  ,1000)
-    return <button>Counter {props.count}</button>
+  useEffect(()=>{
+    console.log('Button rendered');
+    setInterval(()=>{
+      setCount(count=>count+1)
+    },1000);
+  },[]);
+  function onChange(){
+    props.setCount(props.count+1);
+  }
+    return <button onClick={onChange}>Counter {props.count}</button>
 }
 
 export default App
