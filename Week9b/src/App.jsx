@@ -1,28 +1,28 @@
-import { useEffect,useState } from 'react'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [count, setCount] = useState(0);
+  let counterVisible = true;
   return (
     <div>
-      <Button count={count} setCount={setCount}/>
+      {counterVisible?<Counter count={count} setCount={setCount} />:null}
     </div>
-  )
+  );
 }
 
-function Button(props){
-  
-  useEffect(()=>{
-    console.log('Button rendered');
-    setInterval(()=>{
-      setCount(count=>count+1)
-    },1000);
-  },[]);
-  function onChange(){
-    props.setCount(props.count+1);
-  }
-    return <button onClick={onChange}>Counter {props.count}</button>
+function Counter({ count, setCount }) {
+  useEffect(() => {
+    console.log("Button rendered");
+
+    const interval = setInterval(() => {
+      setCount((prevCount) => prevCount + 1);
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup function to prevent memory leaks
+  }, [setCount]); // Dependency array includes `setCount`
+
+  return <div> Counter {count} </div>;
 }
 
-export default App
+export default App;
